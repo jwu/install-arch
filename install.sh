@@ -149,6 +149,25 @@ run_pi_config() {
 }
 
 # ==========================================
+# Verification
+# ==========================================
+
+# config.sh skips the Fcitx5/Rime sync when fcitx5 is missing, so check the
+# result here: Chinese input is one of the pieces a bare-machine install used
+# to lose without saying anything.
+verify_ime() {
+  if ! command -v fcitx5 &> /dev/null; then
+    echo "    fcitx5 is not installed; Chinese input was not configured" >&2
+    return 1
+  fi
+  if [ ! -f "$HOME/.config/fcitx5/profile" ]; then
+    echo "    ~/.config/fcitx5/profile is missing" >&2
+    return 1
+  fi
+  echo "    fcitx5 profile present"
+}
+
+# ==========================================
 # Run
 # ==========================================
 
@@ -159,6 +178,7 @@ for repo in "${REPOS[@]}"; do
 done
 
 step "configs: packages, waybar module, config sync" run_configs
+step "verify: Chinese input (Fcitx5/Rime)" verify_ime
 step "pi CLI (prerequisite for pi-config)" ensure_pi
 step "pi-config: deploy ~/.pi/agent" run_pi_config
 

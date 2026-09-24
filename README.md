@@ -29,6 +29,7 @@ cd ~/bin/install-arch
 | `repository: desktop-settings` | 同上，提供 Fcitx5/Rime 配置 |
 | `repository: pi-config` | 同上，提供 pi 资源 |
 | `configs: packages, waybar module, config sync` | 运行 `configs/linux/install.sh`：pacman 包、Oh My Zsh、从 fork 构建 Waybar niri-windows 模块、编译 gpu-watch、同步全部配置 |
+| `verify: Chinese input` | 检查 `fcitx5` 与 `~/.config/fcitx5/profile`，缺失就记进失败清单（`config.sh` 本身会静默跳过） |
 | `pi CLI` | 检测 `pi`，缺失时用 `npm -g` 安装 `@earendil-works/pi-coding-agent` |
 | `pi-config: deploy ~/.pi/agent` | 运行 `pi-config/install.sh` |
 
@@ -51,6 +52,7 @@ cd ~/bin/install-arch
 | `waybar niri-windows module` | 模块从 `jwu/waybar-niri-windows` 的 main HEAD 构建，直连不通时挂代理重跑：`https_proxy=http://127.0.0.1:7890 ./install.sh`。旧的 `.so` 会保留。详见 `configs/docs/waybar.md` |
 | `xwayland-satellite-git (AUR)` | 需要 `yay`，没有就先装 AUR helper |
 | `Oh My Zsh` / `dracula zsh theme` / `zsh-autosuggestions` | 网络问题，重跑即可 |
+| `verify: Chinese input` | `fcitx5` 没装上（看 `configs: …` 那步的 pacman 输出），或 profile 未同步 |
 | `configs: …` 中的某个子步骤 | `configs/linux/install.sh` 自己也会逐项汇总，按它的清单处理 |
 
 ## 环境变量
