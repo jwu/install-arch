@@ -110,7 +110,11 @@ ensure_repo() {
   fi
 
   echo "    $name: cloning into $dest"
-  if git clone "$GIT_SSH_BASE/$name.git" "$dest" 2>/dev/null; then
+  # BatchMode keeps a first-time SSH connection from stopping on a host-key or
+  # passphrase prompt: it fails immediately and the HTTPS fallback takes over
+  # (all three repos are public, so no token is needed).
+  if GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new" \
+    git clone "$GIT_SSH_BASE/$name.git" "$dest" 2>/dev/null; then
     return 0
   fi
   echo "    $name: SSH clone failed, retrying over HTTPS"
