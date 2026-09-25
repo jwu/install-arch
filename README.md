@@ -30,7 +30,7 @@ cd ~/bin/install-arch
 | `repository: pi-config` | 同上，提供 pi 资源 |
 | `configs: packages, waybar module, config sync` | 运行 `configs/linux/install.sh`：pacman 包、Oh My Zsh、从 fork 构建 Waybar niri-windows 模块、编译 gpu-watch、同步全部配置 |
 | `verify: Chinese input` | 检查 `fcitx5` 与 `~/.config/fcitx5/profile`，缺失就记进失败清单（`config.sh` 本身会静默跳过） |
-| `pi CLI` | 检测 `pi`，缺失时用 `npm -g` 安装 `@earendil-works/pi-coding-agent` |
+| `pi CLI` | 检测 `pi`，缺失时先装 `nodejs` + `npm`（Arch 把 npm 拆成了独立包），再用 `npm -g` 安装 `@earendil-works/pi-coding-agent` |
 | `pi-config: deploy ~/.pi/agent` | 运行 `pi-config/install.sh` |
 
 **中文输入法（Fcitx5/Rime）随 `configs` 这一步自动同步**：`configs/linux/config.sh` 会在
@@ -49,9 +49,11 @@ cd ~/bin/install-arch
 
 | 失败步骤 | 处理 |
 | --- | --- |
+| `configs: packages, …` 中的 `pacman packages` | 出现 `failed retrieving file … 404` 说明 `pacman -Syu` 的 `-y` 拉回的 DB 来自 **mirrorlist 里排第一的那个镜像**，而那份 DB 落后了几小时：它仍旧写着旧版本号（`fcitx5-5.1.22`），旧文件却已被所有镜像删掉，于是 pacman 照着一个不存在的文件名下载。pacman 事务是原子的，**这笔事务里的包一个都不会装上**。修法是**先换镜像、再刷新**，顺序反了没用：`sudo reflector --country China --age 6 --protocol https --latest 20 --sort rate --save /etc/pacman.d/mirrorlist`（`--age 6` 会滤掉落后镜像），或手动把 aliyun 挪下去/注释掉；然后 `sudo pacman -Syy`，用 `pacman -Si fcitx5` 确认已是 `5.1.23-1` 再重跑 |
+| `default shell (zsh)` 报 `chsh: shell must be a full path name` | zsh 没装上（根因通常就是上一行的 `pacman packages`），脚本把空路径传给了 `chsh -s`。装好 zsh 后重跑即可 |
 | `waybar niri-windows module` | 模块从 `jwu/waybar-niri-windows` 的 main HEAD 构建，直连不通时挂代理重跑：`https_proxy=http://127.0.0.1:7890 ./install.sh`。旧的 `.so` 会保留。详见 `configs/docs/waybar.md` |
 | `xwayland-satellite-git (AUR)` | 需要 `yay`，没有就先装 AUR helper |
-| `Oh My Zsh` / `dracula zsh theme` / `zsh-autosuggestions` | 网络问题，重跑即可 |
+| `Oh My Zsh` / `zsh-autosuggestions` | 网络问题，重跑即可 |
 | `verify: Chinese input` | `fcitx5` 没装上（看 `configs: …` 那步的 pacman 输出），或 profile 未同步 |
 | `configs: …` 中的某个子步骤 | `configs/linux/install.sh` 自己也会逐项汇总，按它的清单处理 |
 
