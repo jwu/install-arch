@@ -140,6 +140,41 @@ ensure_pi() {
 }
 
 # ==========================================
+# yay: the AUR helper configs uses for xwayland-satellite-git.
+# ==========================================
+
+# yay-bin ships a prebuilt x86_64 binary, so bootstrapping the helper needs no
+# Go/Rust toolchain and no long compile. This has to run before configs:
+# install_xwayland_satellite() skips itself when no helper is on PATH.
+ensure_yay() {
+  if command -v yay &> /dev/null; then
+    echo "    yay: $(command -v yay)"
+    return 0
+  fi
+  # makepkg refuses to build as root, and every privileged action in this
+  # script already goes through sudo.
+  if [ "$(id -u)" -eq 0 ]; then
+    echo "    yay is missing and makepkg cannot run as root; run this script as a normal user" >&2
+    return 1
+  fi
+  echo "    yay: installing base-devel"
+  sudo pacman -S --needed --noconfirm base-devel || return 1
+  local tmp
+  tmp="$(mktemp -d)" || return 1
+  echo "    yay: building yay-bin from the AUR"
+  if ! git clone --quiet https://aur.archlinux.org/yay-bin.git "$tmp/yay-bin"; then
+    rm -rf "$tmp"
+    return 1
+  fi
+  if ! (cd "$tmp/yay-bin" && makepkg -si --noconfirm); then
+    rm -rf "$tmp"
+    return 1
+  fi
+  rm -rf "$tmp"
+  command -v yay &> /dev/null
+}
+
+# ==========================================
 # Repo installers
 # ==========================================
 
@@ -182,6 +217,7 @@ for repo in "${REPOS[@]}"; do
   step "repository: $repo" ensure_repo "$repo"
 done
 
+step "yay (AUR helper for xwayland-satellite-git)" ensure_yay
 step "configs: packages, waybar module, config sync" run_configs
 step "verify: Chinese input (Fcitx5/Rime)" verify_ime
 step "pi CLI (prerequisite for pi-config)" ensure_pi

@@ -28,6 +28,7 @@ cd ~/bin/install-arch
 | `repository: configs` | 缺失则 clone 到 `~/bin/configs`，已存在则 pull |
 | `repository: desktop-settings` | 同上，提供 Fcitx5/Rime 配置 |
 | `repository: pi-config` | 同上，提供 pi 资源 |
+| `yay (AUR helper for xwayland-satellite-git)` | 检测 `yay`，缺失时装 `base-devel`，再从 AUR 构建 `yay-bin`（预编译二进制，不需要 Go/Rust 工具链）。必须在 `configs` 之前，否则 `xwayland-satellite-git` 那一步会直接跳过 |
 | `configs: packages, waybar module, config sync` | 运行 `configs/linux/install.sh`：pacman 包、Oh My Zsh、从 fork 构建 Waybar niri-windows 模块、编译 gpu-watch、同步全部配置 |
 | `verify: Chinese input` | 检查 `fcitx5` 与 `~/.config/fcitx5/profile`，缺失就记进失败清单（`config.sh` 本身会静默跳过） |
 | `pi CLI` | 检测 `pi`，缺失时先装 `nodejs` + `npm`（Arch 把 npm 拆成了独立包），再用 `npm -g` 安装 `@earendil-works/pi-coding-agent` |
@@ -52,7 +53,8 @@ cd ~/bin/install-arch
 | `configs: packages, …` 中的 `pacman packages` | 出现 `failed retrieving file … 404` 说明 `pacman -Syu` 的 `-y` 拉回的 DB 来自 **mirrorlist 里排第一的那个镜像**，而那份 DB 落后了几小时：它仍旧写着旧版本号（`fcitx5-5.1.22`），旧文件却已被所有镜像删掉，于是 pacman 照着一个不存在的文件名下载。pacman 事务是原子的，**这笔事务里的包一个都不会装上**。修法是**先换镜像、再刷新**，顺序反了没用：`sudo reflector --country China --age 6 --protocol https --latest 20 --sort rate --save /etc/pacman.d/mirrorlist`（`--age 6` 会滤掉落后镜像），或手动把 aliyun 挪下去/注释掉；然后 `sudo pacman -Syy`，用 `pacman -Si fcitx5` 确认已是 `5.1.23-1` 再重跑 |
 | `default shell (zsh)` 报 `chsh: shell must be a full path name` | zsh 没装上（根因通常就是上一行的 `pacman packages`），脚本把空路径传给了 `chsh -s`。装好 zsh 后重跑即可 |
 | `waybar niri-windows module` | 模块从 `jwu/waybar-niri-windows` 的 main HEAD 构建，直连不通时挂代理重跑：`https_proxy=http://127.0.0.1:7890 ./install.sh`。旧的 `.so` 会保留。详见 `configs/docs/waybar.md` |
-| `xwayland-satellite-git (AUR)` | 需要 `yay`，没有就先装 AUR helper |
+| `yay (AUR helper for xwayland-satellite-git)` | 从 AUR 构建 `yay-bin` 失败，常见原因是网络不通，或脚本被 `sudo` 跑（`makepkg` 拒绝 root）。手动补：`sudo pacman -S --needed base-devel git`，再 `git clone https://aur.archlinux.org/yay-bin.git && cd yay-bin && makepkg -si`（`makepkg` 本身不能加 sudo） |
+| `xwayland-satellite-git (AUR)` | 需要 `yay` 从 AUR 构建，编译依赖 Rust + clang（`yay` 会自己装）。`yay` 缺失时上一行会自动 bootstrap；只有那一步也失败才需要手动补，详见 `configs/docs/xwayland-satellite.md` |
 | `Oh My Zsh` / `zsh-autosuggestions` | 网络问题，重跑即可 |
 | `verify: Chinese input` | `fcitx5` 没装上（看 `configs: …` 那步的 pacman 输出），或 profile 未同步 |
 | `configs: …` 中的某个子步骤 | `configs/linux/install.sh` 自己也会逐项汇总，按它的清单处理 |
