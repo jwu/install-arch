@@ -37,8 +37,8 @@ cd ~/bin/install-arch
 **中文输入法（Fcitx5/Rime）随 `configs` 这一步自动同步**：`configs/linux/config.sh` 会在
 `fcitx5` 已安装、且 `desktop-settings` 就在相邻目录时调用
 `desktop-settings/fcitx5/install-linux.sh`，同步 `profile`、候选窗主题和 Rime 的
-`default.custom.yaml` / `rime_ice.custom.yaml`。所以无论走本脚本还是只跑 `config.sh`，
-中文输入法都不会再被漏掉。
+`default.custom.yaml` / `rime_ice.custom.yaml`，并在雾凇拼音词库缺失时下载解压（约 16 MB，
+不清空用户目录）。所以无论走本脚本还是只跑 `config.sh`，中文输入法都不会再被漏掉。
 
 ## 失败处理
 
@@ -72,7 +72,7 @@ cd ~/bin/install-arch
 
 - 重新登录一次，`~/.config/environment.d/fcitx5.conf` 里的输入法环境变量才会生效。
 - 重启 Waybar 以加载新构建的 CFFI 模块（脚本会打印命令）。
-- Rime Ice 词库、`build/`、用户词频与 Fcitx5 键盘缓存都不由脚本管理。
+- Rime Ice 词库由 `desktop-settings/fcitx5/install-linux.sh` 在首次运行时下载（约 16 MB）；`build/`、用户词频与 Fcitx5 键盘缓存仍不由脚本管理。
 
 ## 验证
 
