@@ -30,7 +30,7 @@ cd ~/bin/install-arch
 | `repository: pi-config` | 同上，提供 pi 资源 |
 | `yay (AUR helper for xwayland-satellite-git)` | 检测 `yay`，缺失时装 `base-devel`，再从 AUR 构建 `yay-bin`（预编译二进制，不需要 Go/Rust 工具链）。必须在 `configs` 之前，否则 `xwayland-satellite-git` 那一步会直接跳过 |
 | `configs: packages, waybar module, config sync` | 运行 `configs/linux/install.sh`：pacman 包、Oh My Zsh、从 fork 构建 Waybar niri-windows 模块、编译 gpu-watch、同步全部配置 |
-| `verify: Chinese input` | 检查 `fcitx5` 与 `~/.config/fcitx5/profile`，缺失就记进失败清单（`config.sh` 本身会静默跳过） |
+| `verify: Chinese input` | 检查 `fcitx5`、`~/.config/fcitx5/profile` 和 `~/.local/share/fcitx5/rime/rime_ice.schema.yaml`，缺失就记进失败清单（词库下载在 `config.sh` 里是软失败，`fcitx5` 缺失时整个同步也会被静默跳过） |
 | `pi CLI` | 检测 `pi`，缺失时先装 `nodejs` + `npm`（Arch 把 npm 拆成了独立包），再用 `npm -g` 安装 `@earendil-works/pi-coding-agent` |
 | `pi-config: deploy ~/.pi/agent` | 运行 `pi-config/install.sh` |
 
@@ -56,7 +56,7 @@ cd ~/bin/install-arch
 | `yay (AUR helper for xwayland-satellite-git)` | 从 AUR 构建 `yay-bin` 失败，常见原因是网络不通，或脚本被 `sudo` 跑（`makepkg` 拒绝 root）。手动补：`sudo pacman -S --needed base-devel git`，再 `git clone https://aur.archlinux.org/yay-bin.git && cd yay-bin && makepkg -si`（`makepkg` 本身不能加 sudo） |
 | `xwayland-satellite-git (AUR)` | 需要 `yay` 从 AUR 构建，编译依赖 Rust + clang（`yay` 会自己装）。`yay` 缺失时上一行会自动 bootstrap；只有那一步也失败才需要手动补，详见 `configs/docs/xwayland-satellite.md` |
 | `Oh My Zsh` / `zsh-autosuggestions` | 网络问题，重跑即可 |
-| `verify: Chinese input` | `fcitx5` 没装上（看 `configs: …` 那步的 pacman 输出），或 profile 未同步 |
+| `verify: Chinese input` | `fcitx5` 没装上（看 `configs: …` 那步的 pacman 输出）、profile 未同步，或 Rime Ice 词库没下下来（网络问题，重跑 `desktop-settings/fcitx5/install-linux.sh` 即可） |
 | `configs: …` 中的某个子步骤 | `configs/linux/install.sh` 自己也会逐项汇总，按它的清单处理 |
 
 ## 环境变量

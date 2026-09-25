@@ -205,6 +205,14 @@ verify_ime() {
     return 1
   fi
   echo "    fcitx5 profile present"
+  # The dictionaries are fetched by desktop-settings on its first run, and that
+  # download fails softly so the rest of the sync can finish; without this check
+  # a failed download would pass the whole run silently.
+  if [ ! -f "$HOME/.local/share/fcitx5/rime/rime_ice.schema.yaml" ]; then
+    echo "    Rime Ice dictionaries are missing; see desktop-settings/rime/rime-config.md" >&2
+    return 1
+  fi
+  echo "    Rime Ice dictionaries present"
 }
 
 # ==========================================
