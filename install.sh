@@ -123,6 +123,7 @@ ensure_repo() {
 
 # ==========================================
 # pi CLI: pi-config deploys ~/.pi/agent for it, but configs does not install it.
+# Arch also splits npm into its own package, so nodejs alone is not enough.
 # ==========================================
 
 ensure_pi() {
@@ -131,8 +132,8 @@ ensure_pi() {
     return 0
   fi
   if ! command -v npm &> /dev/null; then
-    echo "    pi is not installed and npm is unavailable; install @earendil-works/pi-coding-agent manually" >&2
-    return 1
+    echo "    pi: npm is missing; installing nodejs and npm"
+    sudo pacman -S --needed --noconfirm nodejs npm || return 1
   fi
   echo "    pi: installing @earendil-works/pi-coding-agent (npm -g)"
   npm install -g @earendil-works/pi-coding-agent || return 1
